@@ -1,0 +1,22 @@
+# Spanish translations for jfman.
+# Copyright (C) 2012 Andrew Makousky
+# This file is distributed under the same license as the jfman.
+# <andrew@example.com>, 2012.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: jfman 0.1\n"
+"Report-Msgid-Bugs-To: andrew@home-dell-2300\n"
+"POT-Creation-Date: 2013-01-12 08:28-0600\n"
+"PO-Revision-Date: 2012-02-18 18:40-0600\n"
+"Last-Translator: <andrew@example.com>\n"
+"Language-Team: Spanish\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/support.c:111 src/support.c:135
+#, c-format
+msgid "Couldn't find pixmap file: %s"
+msgstr "No encontré archivo de pixmap: %s"
