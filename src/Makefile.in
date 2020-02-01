@@ -15,6 +15,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -45,12 +46,20 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/build-aux/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
+LIBRARIES = $(noinst_LIBRARIES)
+AR = ar
+ARFLAGS = cru
+libcmdline_a_AR = $(AR) $(ARFLAGS)
+libcmdline_a_LIBADD =
+am_libcmdline_a_OBJECTS = cmdline.$(OBJEXT) shenv.$(OBJEXT) \
+	noglob.$(OBJEXT)
+libcmdline_a_OBJECTS = $(am_libcmdline_a_OBJECTS)
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_jfman_OBJECTS = main.$(OBJEXT) support.$(OBJEXT)
+am_jfman_OBJECTS = main.$(OBJEXT) support.$(OBJEXT) xmalloc.$(OBJEXT)
 jfman_OBJECTS = $(am_jfman_OBJECTS)
 am__DEPENDENCIES_1 =
-jfman_DEPENDENCIES = libcmdline.a xmalloc.o $(am__DEPENDENCIES_1)
+jfman_DEPENDENCIES = libcmdline.a $(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
@@ -59,8 +68,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(jfman_SOURCES)
-DIST_SOURCES = $(jfman_SOURCES)
+SOURCES = $(libcmdline_a_SOURCES) $(jfman_SOURCES)
+DIST_SOURCES = $(libcmdline_a_SOURCES) $(jfman_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -127,6 +136,7 @@ POT_BUGS_ADDRESS = @POT_BUGS_ADDRESS@
 POT_COPYRIGHT_HOLDER = @POT_COPYRIGHT_HOLDER@
 PO_IN_DATADIR_FALSE = @PO_IN_DATADIR_FALSE@
 PO_IN_DATADIR_TRUE = @PO_IN_DATADIR_TRUE@
+RANLIB = @RANLIB@
 RC = @RC@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -193,9 +203,21 @@ INCLUDES = \
 jfman_SOURCES = \
 	main.c \
 	support.c \
-	support.h
+	support.h \
+	xmalloc.c \
+	xmalloc.h
 
-jfman_LDADD = libcmdline.a xmalloc.o @PACKAGE_LIBS@ $(INTLLIBS)
+noinst_LIBRARIES = libcmdline.a
+libcmdline_a_SOURCES = \
+	cmdline.c \
+	cmdline.h \
+	xmalloc.h \
+	shenv.c \
+	shenv.h \
+	shglob.h \
+	noglob.c
+
+jfman_LDADD = libcmdline.a @PACKAGE_LIBS@ $(INTLLIBS)
 all: all-am
 
 .SUFFIXES:
@@ -230,6 +252,13 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
+libcmdline.a: $(libcmdline_a_OBJECTS) $(libcmdline_a_DEPENDENCIES) 
+	-rm -f libcmdline.a
+	$(libcmdline_a_AR) libcmdline.a $(libcmdline_a_OBJECTS) $(libcmdline_a_LIBADD)
+	$(RANLIB) libcmdline.a
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
@@ -277,8 +306,12 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmdline.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/noglob.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shenv.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/support.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xmalloc.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -378,7 +411,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(LIBRARIES) $(PROGRAMS)
 installdirs:
 	for dir in "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -410,7 +443,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
+clean-am: clean-binPROGRAMS clean-generic clean-noinstLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -480,17 +514,17 @@ uninstall-am: uninstall-binPROGRAMS
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-binPROGRAMS \
-	clean-generic ctags distclean distclean-compile \
-	distclean-generic distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-binPROGRAMS \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-binPROGRAMS
+	clean-generic clean-noinstLIBRARIES ctags distclean \
+	distclean-compile distclean-generic distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-binPROGRAMS install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-binPROGRAMS
 
 
 @WITH_WIN32_TRUE@%-rc.o: %.rc

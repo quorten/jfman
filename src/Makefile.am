@@ -11,9 +11,22 @@ bin_PROGRAMS = jfman
 jfman_SOURCES = \
 	main.c \
 	support.c \
-	support.h
+	support.h \
+	xmalloc.c \
+	xmalloc.h
 
-jfman_LDADD = libcmdline.a xmalloc.o @PACKAGE_LIBS@ $(INTLLIBS)
+noinst_LIBRARIES = libcmdline.a
+
+libcmdline_a_SOURCES = \
+	cmdline.c \
+	cmdline.h \
+	xmalloc.h \
+	shenv.c \
+	shenv.h \
+	shglob.h \
+	noglob.c
+
+jfman_LDADD = libcmdline.a @PACKAGE_LIBS@ $(INTLLIBS)
 
 if WITH_WIN32
 
