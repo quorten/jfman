@@ -1,1 +1,26 @@
-This is a journaling file manager.
+jfman
+=====
+
+This is a journaling file manager.  The current implementation is
+quick and dirty, but it works.
+
+Why?
+====
+
+As part of my backup processes, I lime like to be able to have a nice
+human-readable text journal of the files I've changed, moved around,
+or deleted.  The problem, though, is that the default tools available
+in operating systems are not as good as this as they probably could or
+should be, and although there are some nice to use methods, they are
+nonstandard and specific to particular operating systems.  Why not
+just be able to get the relevant data directly from the user-mode
+software that you are using?  That way, you can get the needed
+information even if you are running atop a proprietary operating
+system, so long as your user-mode software is libre.
+
+Originally, I created a set of patches against PCManFM, but I figured
+writing my own independent file manager would be a better long-term
+solution.  So I started writing this one, `jfman`.
+
+As for PCManFM, chances are that I could get the patches in to
+upstream... Hon Jen Yee seems to be a pretty cooperative fellow.
